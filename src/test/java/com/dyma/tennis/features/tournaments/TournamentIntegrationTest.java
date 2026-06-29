@@ -1,0 +1,132 @@
+package com.dyma.tennis.features.tournaments;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.flywaydb.core.Flyway;
+import java.util.List;
+
+import com.dyma.tennis.features.tournaments.create.CreateTournamentController;
+import com.dyma.tennis.features.tournaments.create.TournamentToCreate;
+import com.dyma.tennis.features.tournaments.delete.DeleteTournamentController;
+import com.dyma.tennis.features.tournaments.get.GetTournamentController;
+import com.dyma.tennis.features.tournaments.list.ListTournamentsController;
+import com.dyma.tennis.features.tournaments.update.TournamentToUpdate;
+import com.dyma.tennis.features.tournaments.update.UpdateTournamentController;
+
+@SpringBootTest
+public class TournamentIntegrationTest {
+
+    @Autowired
+    private CreateTournamentController createTournamentController;
+
+    @Autowired
+    private GetTournamentController getTournamentController;
+
+    @Autowired
+    private ListTournamentsController listTournamentsController;
+
+    @Autowired
+    private UpdateTournamentController updateTournamentController;
+
+    @Autowired
+    private DeleteTournamentController deleteTournamentController;
+
+    @BeforeEach
+    void clearDatabase(@Autowired Flyway flyway) {
+        flyway.clean();
+        flyway.migrate();
+    }
+
+    @Test
+    public void shouldCreateTournament() {
+        // Given
+        TournamentToCreate tournamentToCreate = new TournamentToCreate(
+                "Madrid Master 1000",
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(17),
+                500000,
+                64);
+
+        // When
+        Tournament savedTournament = createTournamentController.createTournament(tournamentToCreate);
+        Tournament createdTournament = getTournamentController.getTournament(savedTournament.info().identifier());
+
+        // Then
+        Assertions.assertThat(createdTournament.info().name()).isEqualTo("Madrid Master 1000");
+    }
+
+    @Test
+    public void shouldFailToCreateAnExistingTournament() {
+        // Given
+        TournamentToCreate tournamentToCreate = new TournamentToCreate(
+                "Madrid Master 1000",
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(17),
+                500000,
+                64);
+        createTournamentController.createTournament(tournamentToCreate);
+        TournamentToCreate duplicatedTournamentToCreate = new TournamentToCreate(
+                "Madrid Master 1000",
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(17),
+                500000,
+                64);
+
+        // When / Then
+        Assertions.assertThatThrownBy(() -> createTournamentController.createTournament(duplicatedTournamentToCreate))
+                .isInstanceOf(TournamentAlreadyExistsException.class)
+                .hasMessage("Tournament with name Madrid Master 1000 already exists.");
+    }
+
+    @Test
+    public void shouldUpdateTournament() {
+        // Given
+        UUID frenchOpenIdentifier = UUID.fromString("d4a9f8e2-9051-4739-90bc-1cb7e4c7ad42");
+        TournamentToUpdate tournamentToUpdate = new TournamentToUpdate(
+                frenchOpenIdentifier,
+                "Roland Garros",
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(17),
+                2500000,
+                128);
+
+        // When
+        updateTournamentController.updateTournament(tournamentToUpdate);
+        Tournament updatedTournament = getTournamentController.getTournament(frenchOpenIdentifier);
+
+        // Then
+        Assertions.assertThat(updatedTournament.info().name()).isEqualTo("Roland Garros");
+    }
+
+    @Test
+    public void shouldDeleteTournament() {
+        // Given
+        UUID tournamentToDelete = UUID.fromString("124edf07-64fa-4ea4-a65e-3bfe96df5781");
+
+        // When
+        deleteTournamentController.deleteTournament(tournamentToDelete);
+
+        // Then
+        List<Tournament> allTournaments = listTournamentsController.list();
+        Assertions.assertThat(allTournaments)
+                .extracting("info.name")
+                .containsExactly("Australian Open", "French Open", "Wimbledon");
+    }
+
+    @Test
+    public void shouldFailToDeleteTournament_WhenTournamentDoesNotExist() {
+        // Given
+        UUID tournamentToDelete = UUID.fromString("5f8c9b43-8d74-49e8-b821-f43d57e4a9b7");
+
+        // When / Then
+        Assertions.assertThatThrownBy(() -> deleteTournamentController.deleteTournament(tournamentToDelete))
+                .isInstanceOf(TournamentNotFoundException.class)
+                .hasMessage("Tournament with identifier 5f8c9b43-8d74-49e8-b821-f43d57e4a9b7 could not be found.");
+    }
+}

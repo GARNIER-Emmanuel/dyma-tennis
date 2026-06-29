@@ -1,0 +1,21 @@
+INSERT INTO public.player (first_name, last_name, birth_date, points, rank)
+VALUES
+    ('Novak', 'Djokovic', '1987-05-22', 4000, 3),
+    ('Rafael', 'Nadal', '1986-06-03', 3500, 9),
+    ('Roger', 'Federer', '1981-08-08', 3000, 4),
+    ('Andy', 'Murray', '1987-05-15', 2000, 5),
+    ('Carlos', 'Alcaraz', '2003-05-05', 8000, 1),
+    ('Jannik', 'Sinner', '2001-08-16', 7500, 2),
+    ('Daniil', 'Medvedev', '1996-02-11', 6000, 6),
+    ('Alexander', 'Zverev', '1997-04-20', 5500, 7),
+    ('Andrey', 'Rublev', '1997-10-20', 4800, 8),
+    ('Casper', 'Ruud', '1998-12-22', 4500, 10),
+    ('Stefanos', 'Tsitsipas', '1998-08-12', 4200, 11),
+    ('Holger', 'Rune', '2003-04-29', 3800, 12),
+    ('Grigor', 'Dimitrov', '1991-05-16', 3600, 13),
+    ('Hubert', 'Hurkacz', '1997-02-11', 3400, 14),
+    ('Taylor', 'Fritz', '1997-10-28', 3200, 15),
+    ('Tommy', 'Paul', '1997-05-17', 3000, 16),
+    ('Alex', 'de Minaur', '1999-02-17', 2800, 17),
+    ('Ugo', 'Humbert', '1998-06-26', 2600, 18),
+    ('Ben', 'Shelton', '2002-10-09', 2400, 19);
